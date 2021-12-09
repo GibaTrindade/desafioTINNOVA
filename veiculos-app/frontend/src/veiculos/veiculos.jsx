@@ -6,18 +6,16 @@ import VeiculoForm from "./veiculoForm";
 import VeiculosList from "./veiculosList";
 import VeiculosNaoVendidos from "./veiculosNaoVendidos";
 import PorMarcaList from "./porMarcaList";
+import UltimaSemana from "./ultimaSemana";
 
 const URL = 'http://localhost:3004/api/veiculos'
-let isUpdating = false
-
 
 export default class Veiculo extends Component {
     constructor(props) {
         super(props)
-        let naoVendidos
         this.state = {
             modelo: '', marca: '', ano: '', descricao: '', list: [],
-            naoVendidos: 0, porMarca: []
+            naoVendidos: 0, porMarca: [], ultimaSemana: []
         }
         this.handleAdd = this.handleAdd.bind(this)
         this.handleChange = this.handleChange.bind(this)
@@ -33,13 +31,14 @@ export default class Veiculo extends Component {
         this.handleClear = this.handleClear.bind(this)
         this.handleQuantidade = this.handleQuantidade.bind(this)
         this.handlePorMarca = this.handlePorMarca.bind(this)
+        this.handleUltimaSemana = this.handleUltimaSemana.bind(this)
         this.refresh()
     }
 
-    refresh(modelo = '', marca = '', ano = '', descricao = '', isUp = false) {
+    refresh(modelo = '', marca = '', ano = '', descricao = '') {
         this.handleQuantidade()
         this.handlePorMarca()
-        isUpdating = isUp
+        this.handleUltimaSemana()
         let searchModelo = modelo ? `&veiculo__regex=/${modelo}/` : ''
         let searchMarca = marca ? `&marca__regex=/${marca}/` : ''
         let searchAno = ano ? `&ano=${parseInt(ano)}` : ''
@@ -84,9 +83,8 @@ export default class Veiculo extends Component {
     }
 
     handleLoadToUpdate(v) {
-        isUpdating = true
         this.refresh(v.veiculo, v.marca,
-            v.ano, v.descricao, isUpdating)
+            v.ano, v.descricao)
     }
 
     handleUpdate(v) {
@@ -135,6 +133,12 @@ export default class Veiculo extends Component {
             )
     }
 
+    handleUltimaSemana() {
+        axios.get(`${URL}/ultimaSemana`)
+            .then(resp => this.setState({ ...this.state, ultimaSemana: resp.data.value })
+
+            )
+    }
 
 
     render() {
@@ -142,8 +146,11 @@ export default class Veiculo extends Component {
             <div>
 
                 <VeiculosNaoVendidos handleQuantidade={this.state.naoVendidos} />
+                <PageHeader name='Por Marca' />
                 <PorMarcaList porMarca={this.state.porMarca} />
-                <PageHeader name='Veículos' small='Cadastro'></PageHeader>
+                <PageHeader name='Cadastrados na Última Semana' />
+                <UltimaSemana ultimaSemana={this.state.ultimaSemana} />
+                <PageHeader name='Veículos' small='Cadastro' />
                 <VeiculoForm modelo={this.state.modelo}
                     marca={this.state.marca}
                     ano={this.state.ano}

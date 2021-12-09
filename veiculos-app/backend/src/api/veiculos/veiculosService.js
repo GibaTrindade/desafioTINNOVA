@@ -1,4 +1,5 @@
 const Veiculo = require('./veiculos')
+const moment = require('moment')
 
 Veiculo.methods(['get', 'post', 'put', 'delete'])
 Veiculo.updateOptions({ new: true, runValidators: true })
@@ -31,6 +32,18 @@ Veiculo.route('porMarca', (req, res, next) => {
         }
 
     )
+})
+
+Veiculo.route('ultimaSemana', (req, res, next) => {
+    Veiculo.find({ created: {$gte: moment().subtract(7, 'days')} }, 
+    (error, value) => {
+        if (error) {
+            res.status(500).json({ errors: [error] })
+        } else {
+            res.json({ value })
+
+        }
+    })
 })
 
 module.exports = Veiculo
